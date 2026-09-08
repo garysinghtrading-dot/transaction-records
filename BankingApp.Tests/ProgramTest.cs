@@ -11,19 +11,52 @@ namespace BankingApp.Tests
         [Fact]
         public void Main_AddNewCustomer_DuplicateUser_ReturnsFailure()
         {
-            // Capture Console output
+            // Preserve original console writer to avoid cross-test output contamination
+            TextWriter standardOutput = Console.Out;
             using var sw = new StringWriter();
             Console.SetOut(sw);
 
-            // Command-line arguments for existing customer ID 11
-            string[] args = new[] { "AddNewCustomer", "Test1", "Run1", "11" };
+            try
+            {
+                // Existing customer regression test
+                string[] args = new[] { "AddNewCustomer", "Test1", "Run1", "11" };
 
-            // Act
-            Program.Main(args);
+                // Act
+                Program.Main(args);
 
-            // Assert: Verify failure message is printed
-            string output = sw.ToString();
-            Assert.Contains("Could not create customer successfully", output);
+                // Assert
+                string output = sw.ToString();
+                Assert.Contains("Could not create customer successfully", output);
+            }
+            finally
+            {
+                Console.SetOut(standardOutput);
+            }
+        }
+
+        [Fact]
+        public void Main_AddNewCustomerInitialDeposit_ReturnsSuccess()
+        {
+            TextWriter standardOutput = Console.Out;
+            using var sw = new StringWriter();
+            Console.SetOut(sw);
+
+            try
+            {
+                // Added missing comma between "11" and "2500"
+                string[] args = new[] { "Initial Deposit", "Test1", "Run1", "11", "2500" };
+
+                // Act
+                Program.Main(args);
+
+                // Assert: Added missing closing quote and parenthesis
+                string output = sw.ToString();
+                Assert.Contains("Could not create initial deposit", output);
+            }
+            finally
+            {
+                Console.SetOut(standardOutput);
+            }
         }
     }
 }
