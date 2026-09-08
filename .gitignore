@@ -1,0 +1,41 @@
+## Build and output directories
+[Bb]in/
+[Ob]j/
+out/
+[LGs]ogs/
+.vs/
+.vscode/
+
+## User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## Dependency files
+packages/
+*.nuget.props
+*.nuget.targets
+
+## Test results & code coverage
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+## Environment & sensitive variables
+.env
+*.env.local
+
+## SQLite local files (if generated locally during testing/fallback)
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+
+## OS generated files
+.DS_Store
+Thumbs.db
