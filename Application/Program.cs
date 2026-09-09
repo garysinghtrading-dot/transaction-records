@@ -63,6 +63,28 @@ namespace Startup
                 else
                     Console.WriteLine("Could not create initial deposit");
             }
+            else if(transaction == "Delete")
+            {
+                if(args.Length < 4)
+                {
+                    Console.WriteLine("Need to enter firstname, lastname, customer id");
+                    return;
+                }
+                string firstname = args[1];
+                string lastname = args[2];
+                int customerid = int.Parse(args[3]);
+
+                var data = new {
+                    FirstName = firstname,
+                    LastName = lastname,
+                    CustomerId = customerid,
+                };     
+                bool isSuccess= STaws.RecordTransaction(firstname, lastname, customerid, data, "delete-customer").GetAwaiter().GetResult();
+                if(isSuccess)
+                    Console.WriteLine($"Customer {firstname} {lastname} Deleted Successfully");
+                else
+                    Console.WriteLine("Error deleting customer");           
+            }
         } // end Main Method
     }
 }

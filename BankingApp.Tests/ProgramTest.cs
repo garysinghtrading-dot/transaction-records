@@ -58,5 +58,30 @@ namespace BankingApp.Tests
                 Console.SetOut(standardOutput);
             }
         }
+ [Fact]
+        public void Main_Delete_User_ReturnsTrue()
+        {
+            // Preserve original console writer to avoid cross-test output contamination
+            TextWriter standardOutput = Console.Out;
+            using var sw = new StringWriter();
+            Console.SetOut(sw);
+
+            try
+            {
+                // Existing customer regression test
+                string[] args = new[] { "Delete", "Test1", "Run1", "11" };
+
+                // Act
+                Program.Main(args);
+
+                // Assert
+                string output = sw.ToString();
+                Assert.Contains("Customer Test1 Run1 Deleted Successfully", output);
+            }
+            finally
+            {
+                Console.SetOut(standardOutput);
+            }
+        }
     }
 }
