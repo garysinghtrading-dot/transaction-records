@@ -58,7 +58,7 @@ namespace BankingApp.Tests
                 Console.SetOut(standardOutput);
             }
         }
- [Fact]
+        [Fact]
         public void Main_Delete_User_ReturnsTrue()
         {
             // Preserve original console writer to avoid cross-test output contamination

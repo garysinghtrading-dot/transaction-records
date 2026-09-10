@@ -25,7 +25,7 @@ public class IndexModel : PageModel
 
     public void OnGet()
     {
-
+        Console.WriteLine($"--- DEBUG: Is User Authenticated? {User.Identity?.IsAuthenticated} ---");
     }
     public void OnPost()
     {

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-//using BankingApp; 
+using BankingApp; 
 using SQLitePCL;
 namespace TransactionRecords.Pages.Home;
 
@@ -21,9 +21,14 @@ public class HomeModel : PageModel
         _logger = logger;
     }
 
-    public void OnGet()
+    public IActionResult OnGet()
     {
-
+        // Verify User has authentication cookie set, else send them back to the LogIn Page
+        if(User.Identity == null || !User.Identity.IsAuthenticated){
+            // send them back to the login page if they lack cookie
+            return Redirect("/");
+        }
+        return Page();
     }
     public void OnPost()
     {
