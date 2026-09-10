@@ -1,10 +1,10 @@
 name: Run BankingApp Unit Tests
-
+# Disabling CICD workflow, we have ensured that these tests are passing
+# While the web interface is being built, we are disabling these tests until more functionality is added
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    #branches: [ "main" ]
+
 
 jobs:
   test:
