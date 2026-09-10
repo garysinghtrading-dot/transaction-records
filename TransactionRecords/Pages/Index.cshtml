@@ -9,6 +9,14 @@
 <div class="container mt-5" style="max-width: 400px;">
     <h2 class="text-center mb-4">Welcome Financial Records</h2>
 
+    <!-- Error/Status Message Display -->
+    @if(!string.IsNullOrEmpty(Model.LoginMessage))
+    {
+        <div class="alert alert-danger" role="alert">
+            @Model.LoginMessage
+        </div>
+    }
+
     <!-- Login Card -->
     <div class="card p-4 shadow-sm">
         <h4 class="mb-3">Login</h4>
@@ -24,7 +32,7 @@
                 <input asp-for="Password" type="password" class="form-control" placeholder="Enter password" required />
             </div>
 
-            <button type="submit" class="btn btn-primary w-100">Log In</button>
+            <button type="submit" asp-page-handler="Login" class="btn btn-primary w-100">Log In</button>
         </form>
     </div>
 

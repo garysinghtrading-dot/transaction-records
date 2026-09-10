@@ -1,2 +1,2 @@
 # transaction-records
-Repository for recording  banking transaction records
+Repository for recording  expenses reports

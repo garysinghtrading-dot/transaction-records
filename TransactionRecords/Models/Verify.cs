@@ -101,7 +101,7 @@ namespace BankingApp
             Console.WriteLine(json);
         }
         
-        public void VerifyLocally(string username, string password)
+        public Dictionary<string, object> VerifyLocally(string username, string password)
         {
             var responseObj = new Dictionary<string, object>();
             responseObj["authenticated"] = false;
@@ -122,9 +122,8 @@ namespace BankingApp
             if (storedHash == null || storedHash == DBNull.Value)
             {
                 responseObj["status"] = "Invalid Username";
-                // write data (Authentication Failed)
-                WriteData(responseObj);
-                return;
+                // write data (Authentication Failed);
+                return responseObj;
             }
             
             // cconvert DB value to string
@@ -137,17 +136,14 @@ namespace BankingApp
             if(!PasswordMatch)
             {
                 responseObj["status"] = "Invalid Password";
-                WriteData(responseObj);
-                return;
+                return responseObj;
             }
             
             // At this point the user has been able to be verified
             responseObj["authenticated"] = true;
             responseObj["access_token"] = GenerateAccessToken();
             responseObj["status"] = "Username and password match";
-            
-            WriteData(responseObj); // Print and done
-
+            return responseObj;  
         }
         
     } // end Verify Class
