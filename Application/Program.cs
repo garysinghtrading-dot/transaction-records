@@ -39,7 +39,7 @@ namespace Startup
                 else
                     Console.WriteLine("Could not create customer successfully");
             } // end AddNewCustomer
-            else if(transaction == "Initial Deposit")
+            else if(transaction == "InitialDeposit")
             {
                 if(args.Length < 5)
                 {
