@@ -44,7 +44,7 @@ namespace BankingApp.Tests
             try
             {
                 // Added missing comma between "11" and "2500"
-                string[] args = new[] { "Initial Deposit", "Test1", "Run1", "11", "2500" };
+                string[] args = new[] { "InitialDeposit", "Test1", "Run1", "11", "2500" };
 
                 // Act
                 Program.Main(args);
