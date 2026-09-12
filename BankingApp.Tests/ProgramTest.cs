@@ -26,7 +26,7 @@ namespace BankingApp.Tests
 
                 // Assert
                 string output = sw.ToString();
-                Assert.Contains("Could not create customer successfully", output);
+                Assert.Contains("Customer Test1 Run1 successfully create", output);
             }
             finally
             {
@@ -51,7 +51,7 @@ namespace BankingApp.Tests
 
                 // Assert: Added missing closing quote and parenthesis
                 string output = sw.ToString();
-                Assert.Contains("Could not create initial deposit", output);
+                Assert.Contains("Customer Test1 Run1 Initial Deposit created successfully", output);
             }
             finally
             {
