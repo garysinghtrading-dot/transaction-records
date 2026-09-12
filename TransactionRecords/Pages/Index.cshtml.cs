@@ -16,8 +16,9 @@ public class IndexModel : PageModel
     [BindProperty]
     public string? Password { get; set; } = string.Empty;
 
-    //[BindProperty(SupportsGet = true)]
+    [TempData]
     public string? LoginMessage { get; set; }
+
 
 
     public IndexModel(ILogger<IndexModel> logger)
