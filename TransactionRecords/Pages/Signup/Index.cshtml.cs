@@ -49,8 +49,13 @@ public class SignupModel : PageModel
 
     private bool AddNewCustomer(string FirstName, string LastName, string Email, string Password, string UserName)
     {
+        // Get last customer id
         SendTransactions STaws =  new SendTransactions();
-        int customerid = 11;
+        int customerid = STaws.GetCustomerIdAsync("last-customer").GetAwaiter().GetResult();
+
+        customerid++; // increase customerid by 1
+
+        // Send payload to the database
         var data = new {
             FirstName = FirstName,
             LastName = LastName,
@@ -62,9 +67,20 @@ public class SignupModel : PageModel
         bool isSuccess= STaws.RecordTransaction(FirstName, LastName, customerid, data, "add-new-customer").GetAwaiter().GetResult();
         return isSuccess;
     }
+
+    private string PasswordHash(string Password)
+    {
+        Verify V = new Verify();
+        string HashedPassword = V.GetPassWordHash(Password); // Hash Password from user input form
+        return HashedPassword;
+    }
+
     public IActionResult OnPostUserRegistration()
     {
-        bool isSuccess = AddNewCustomer(FirstName, LastName, Email, Password, UserName);
+        
+        string HashdPword = PasswordHash(Password);
+
+        bool isSuccess = AddNewCustomer(FirstName, LastName, Email, HashdPword, UserName);
         if(isSuccess){
             LoginMessage = "Registration Successful";
             return Redirect("/Home");

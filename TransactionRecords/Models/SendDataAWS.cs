@@ -50,5 +50,17 @@ namespace BankingApp
             return false;
             
         }
+
+        public async Task<int> GetCustomerIdAsync(string path)
+        {
+            using var client = new HttpClient();
+
+            // set URL
+            string url = baseurl + path;
+            var result = await client.GetFromJsonAsync<CustomerResponse>(url);    
+            return result.CustomerId;
+        }
+
+        public record CustomerResponse(int CustomerId);
     }
 }
