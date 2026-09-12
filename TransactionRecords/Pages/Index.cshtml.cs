@@ -11,12 +11,14 @@ public class IndexModel : PageModel
 {
     private readonly ILogger<IndexModel> _logger;
     [BindProperty]
-    public string Username { get; set; } = string.Empty;
+    public string? Username { get; set; } = string.Empty;
 
     [BindProperty]
-    public string Password { get; set; } = string.Empty;
+    public string? Password { get; set; } = string.Empty;
 
-    public string? LoginMessage { get; set; } = string.Empty;
+    //[BindProperty(SupportsGet = true)]
+    public string? LoginMessage { get; set; }
+
 
     public IndexModel(ILogger<IndexModel> logger)
     {
@@ -25,8 +27,9 @@ public class IndexModel : PageModel
 
     public void OnGet()
     {
-        Console.WriteLine($"--- DEBUG: Is User Authenticated? {User.Identity?.IsAuthenticated} ---");
-    }
+        LoginMessage = TempData["LoginMessage"] as string;
+    } 
+
     public void OnPost()
     {
         // TODO

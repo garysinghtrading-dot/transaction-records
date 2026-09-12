@@ -1,0 +1,41 @@
+@page
+@model SignupModel
+
+@{
+    ViewData["Title"] = "Sign Up";
+}
+
+
+<div class="container mt-5" style="max-width: 400px;">
+    <h2 class="text-center mb-4">Welcome Financial Records</h2>
+    <p>Fill out the form below to sign up </p>
+
+    <!-- Error/Status Message Display -->
+    @if(!string.IsNullOrEmpty(Model.SignupMessage))
+    {
+        <div class="alert alert-danger" role="alert">
+            @Model.SignupMessage
+        </div>
+    }
+
+    <!-- Signup Card -->
+    <div class="card p-4 shadow-sm">
+        <h4 class="mb-3">Sign Up</h4>
+
+        <form method="post">
+            <div class="form-group mb-3">
+                <p>Enter A UserName </p>
+                <label>Username</label>
+                <input asp-for="Username" class="form-control" placeholder="Enter username" required />
+            </div>
+
+            <div class="form-group mb-3">
+                <p>Enter A Password </p>
+                <label>Password</label>
+                <input asp-for="Password" type="password" class="form-control" placeholder="Enter password" required />
+            </div>
+
+            <button type="submit" asp-page-handler="UserRegistration" class="btn btn-primary w-100">Sign Up</button>
+        </form>
+    </div>
+</div>
