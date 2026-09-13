@@ -39,7 +39,7 @@ public class IndexModel : PageModel
     public async Task<IActionResult> OnPostLoginAsync()
     {
        Verify V = new Verify();
-       var responseObj = V.VerifyLocally(Username, Password);
+       Dictionary<string, object> responseObj = V.VerifyAWS(Username, Password); 
 
        if((bool)responseObj["authenticated"])
        {

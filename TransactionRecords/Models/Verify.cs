@@ -3,10 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-
 
 namespace BankingApp
 {
@@ -19,6 +21,7 @@ namespace BankingApp
     
     public class Verify
     {
+        private static string baseurl = Environment.GetEnvironmentVariable("DB_API_URL_CLDFLR") ?? string.Empty; // API URL FOR DB
         public Verify() {} // Default Constructor
 
         // Helper method to compute Cognito Secret Hash if a client secret exists
@@ -101,6 +104,9 @@ namespace BankingApp
             Console.WriteLine(json);
         }
         
+        /*
+            * Method to verify user from localDB
+        */
         public Dictionary<string, object> VerifyLocally(string username, string password)
         {
             var responseObj = new Dictionary<string, object>();
@@ -144,6 +150,96 @@ namespace BankingApp
             responseObj["access_token"] = GenerateAccessToken();
             responseObj["status"] = "Username and password match";
             return responseObj;  
+        }
+
+public static async Task<string> GetHashedPassword(string passwordInput, string path = "get-password")
+        {
+            // build url
+            string url_ = baseurl + path;
+            try
+            {
+                using HttpClient client = new HttpClient();
+
+                var payload = new { UserName = passwordInput }; 
+
+                // Force System.Text.Json to strictly use exact C# property casing ("UserName")
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = null 
+                };
+
+                string jsonPayload = JsonSerializer.Serialize(payload, options);
+                using var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response = await client.PostAsync(url_, content);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return "Request failed";
+                }
+
+                string jsonResponse = await response.Content.ReadAsStringAsync();
+                JsonNode? node = JsonNode.Parse(jsonResponse);
+
+                bool isStatusTrue = node?["success"]?.GetValue<bool>() ?? false;
+
+                if (isStatusTrue)
+                {
+                    string? hashedPassword = node?["Password"]?.GetValue<string>();
+
+                    if (!string.IsNullOrEmpty(hashedPassword))
+                    {
+                        return hashedPassword;
+                    }
+                }
+
+                return "Password not found";
+            }
+            catch
+            {
+                return "Request failed";
+            }
+        }
+
+        /*
+            * Method to verify customer from AWS DB
+        */
+        public Dictionary<string, object> VerifyAWS(string username, string password)
+        {
+            var responseObj = new Dictionary<string, object>();
+            responseObj["authenticated"] = false;
+        
+            
+            // create new Object of SendData Class
+            SendTransactions ST = new SendTransactions();
+            
+            string storedHash = GetHashedPassword(username).GetAwaiter().GetResult();
+
+            if(storedHash == "Password not found" || storedHash == "Request failed")
+            { 
+                if(storedHash == "Password not found")
+                    responseObj["status"] = "Invalid Username";
+                else
+                    responseObj["status"] = storedHash;
+                return responseObj;
+            }
+    
+            string StoredHashString = storedHash;
+            
+            // verify Password
+            bool PasswordMatch = VerifyPassword(password, StoredHashString);
+            
+            if(!PasswordMatch)
+            {
+                responseObj["status"] = "Invalid Password";
+                return responseObj;
+            }
+            
+            // At this point the user has been able to be verified
+            responseObj["authenticated"] = true;
+            responseObj["access_token"] = GenerateAccessToken();
+            responseObj["status"] = "Username and password match";
+            return responseObj; 
         }
         
     } // end Verify Class
