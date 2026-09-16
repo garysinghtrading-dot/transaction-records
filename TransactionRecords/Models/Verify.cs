@@ -152,14 +152,26 @@ namespace BankingApp
             return responseObj;  
         }
 
-public static async Task<string> GetHashedPassword(string passwordInput, string path = "get-password")
+        /*
+            * Method to make HTTP request to AWS Lambda function to retrieve a password
+            * IMPORTANT:
+                * Password is hashed, it is not returning a raw user password
+            * Process:
+                * Make HTTP request with JSON data payload
+                * Verify the server responded
+                * Veryify Password
+                * Return Response
+        */
+        public static async Task<string> GetHashedPassword(string passwordInput, string path = "get-password")
         {
             // build url
             string url_ = baseurl + path;
             try
             {
+                // Initialize HTTP Client
                 using HttpClient client = new HttpClient();
 
+                // Payload to be sent (In this case username)
                 var payload = new { UserName = passwordInput }; 
 
                 // Force System.Text.Json to strictly use exact C# property casing ("UserName")
@@ -168,20 +180,22 @@ public static async Task<string> GetHashedPassword(string passwordInput, string 
                     PropertyNamingPolicy = null 
                 };
 
+                // Serialize the payload
                 string jsonPayload = JsonSerializer.Serialize(payload, options);
-                using var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+                using var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json"); // Declare application type (JSON in our case)
 
                 HttpResponseMessage response = await client.PostAsync(url_, content);
 
+                // The server is down we couldn't connect to it (Regardless of 200, 403, 404, 500 response code)
                 if (!response.IsSuccessStatusCode)
                 {
-                    return "Request failed";
+                    return "Sorry, our server is down try again later";
                 }
 
                 string jsonResponse = await response.Content.ReadAsStringAsync();
                 JsonNode? node = JsonNode.Parse(jsonResponse);
 
-                bool isStatusTrue = node?["success"]?.GetValue<bool>() ?? false;
+                bool isStatusTrue = node?["success"]?.GetValue<bool>() ?? false; 
 
                 if (isStatusTrue)
                 {
@@ -193,11 +207,11 @@ public static async Task<string> GetHashedPassword(string passwordInput, string 
                     }
                 }
 
-                return "Password not found";
+                return "Invalid Password";
             }
             catch
             {
-                return "Request failed";
+                 return "User not found";
             }
         }
 
@@ -215,12 +229,9 @@ public static async Task<string> GetHashedPassword(string passwordInput, string 
             
             string storedHash = GetHashedPassword(username).GetAwaiter().GetResult();
 
-            if(storedHash == "Password not found" || storedHash == "Request failed")
+            if(storedHash == "Invalid Password" || storedHash == "User not found")
             { 
-                if(storedHash == "Password not found")
-                    responseObj["status"] = "Invalid Username";
-                else
-                    responseObj["status"] = storedHash;
+                responseObj["status"] = storedHash;
                 return responseObj;
             }
     
