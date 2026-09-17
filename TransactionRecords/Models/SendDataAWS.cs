@@ -53,6 +53,47 @@ namespace BankingApp
             
         }
 
+        public async Task<bool> RecordTransaction(
+            object new_payload, string path
+        )
+        {
+            string url = baseurl + path;
+
+            var accessId = Environment.GetEnvironmentVariable("DB_ACCESS_KEYCLDFLF_TOKEN");
+            if (string.IsNullOrWhiteSpace(accessId))
+                throw new InvalidOperationException("ACCESS_ID environment variable is not set.");
+
+            var payload = new_payload;
+
+            var json = System.Text.Json.JsonSerializer.Serialize(
+                payload,
+                new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = null
+                }
+            );
+
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("ACCESS_ID", accessId);
+
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await client.PostAsync(url, content);
+
+            if(!response.IsSuccessStatusCode)
+                return false; 
+
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            using var doc = JsonDocument.Parse(responseBody);
+
+            if(doc.RootElement.TryGetProperty("success", out var statusElement))
+                return statusElement.GetBoolean();
+
+            return false;
+            
+        }
+
         public async Task<int> GetCustomerIdAsync(string path)
         {
             using var client = new HttpClient();

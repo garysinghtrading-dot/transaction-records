@@ -6,6 +6,18 @@
 }
 
 <div class="container mt-5" style="max-width: 400px;">
+    <!-- Modern Bootstrap 5 alternative to .jumbotron -->
+    <div class="p-4 bg-light rounded-3 text-center border shadow-sm">
+        
+        <!-- Clean single-line username display -->
+        <h1 class="h3 mb-0">
+            Welcome @(!string.IsNullOrEmpty(Model.UserName) ? Model.UserName : "User")
+        </h1>
+
+    </div>
+</div>
+
+<div class="container mt-5" style="max-width: 400px;">
     <h2 class="text-center mb-4">Welcome Enter a record</h2>
 
     <!-- Error/Status Message Display -->
@@ -28,10 +40,14 @@
 
             <div class="form-group mb-3">
                 <label>Transaction Type</label>
-                <input asp-for="TransType" type="text" class="form-control" placeholder="e.g., Deposit" required />
+                <select asp-for="TransType" class="form-control" required>
+                    <option value="" disabled selected>Select a transaction type</option>
+                    <option value="withdrawal">Expense</option>
+                    <option value="Deposit">Deposit</option>
+                </select>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100">Save Record</button>
+            <button type="submit" asp-page-handler="EnterTransactionRecord" class="btn btn-primary w-100">Save Record</button>
         </form>
     </div>
 </div>

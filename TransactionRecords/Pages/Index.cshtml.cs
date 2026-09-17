@@ -46,7 +46,8 @@ public class IndexModel : PageModel
             // Authentication Successful, create user id
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, Username),
+                new Claim(ClaimTypes.Name, Username)
+                //new Claim(ClaimTypes.CustomerId, responseObj["CustomerId"].ToInt(),
             };
 
             var ClaimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

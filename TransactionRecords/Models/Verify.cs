@@ -161,57 +161,59 @@ namespace BankingApp
                 * Verify the server responded
                 * Veryify Password
                 * Return Response
+                * Response that is returned includes:
+                    * Customers Password (Hashed)
+                    * CustomerId
         */
-        public static async Task<string> GetHashedPassword(string passwordInput, string path = "get-password")
+        public static async Task<Dictionary<string, object>> GetHashedPassword(string passwordInput, string path = "get-password")
         {
-            // build url
+            var response_object = new Dictionary<string, object>();
+            response_object["msg"] = "User not found";
+            response_object["Password"] = string.Empty;
+
             string url_ = baseurl + path;
             try
             {
-                // Initialize HTTP Client
                 using HttpClient client = new HttpClient();
 
-                // Payload to be sent (In this case username)
-                var payload = new { UserName = passwordInput }; 
+                var payload = new { UserName = passwordInput };
+                var options = new JsonSerializerOptions { PropertyNamingPolicy = null };
 
-                // Force System.Text.Json to strictly use exact C# property casing ("UserName")
-                var options = new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = null 
-                };
-
-                // Serialize the payload
                 string jsonPayload = JsonSerializer.Serialize(payload, options);
-                using var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json"); // Declare application type (JSON in our case)
+                using var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
                 HttpResponseMessage response = await client.PostAsync(url_, content);
 
-                // The server is down we couldn't connect to it (Regardless of 200, 403, 404, 500 response code)
                 if (!response.IsSuccessStatusCode)
                 {
-                    return "Sorry, our server is down try again later";
+                    response_object["msg"] = "Sorry we encountered an error, please try again later";
+                    return response_object;
                 }
 
                 string jsonResponse = await response.Content.ReadAsStringAsync();
                 JsonNode? node = JsonNode.Parse(jsonResponse);
 
-                bool isStatusTrue = node?["success"]?.GetValue<bool>() ?? false; 
+                bool isStatusTrue = node?["success"]?.GetValue<bool>() ?? false;
 
                 if (isStatusTrue)
                 {
                     string? hashedPassword = node?["Password"]?.GetValue<string>();
+                    int customerId = node?["CustomerId"]?.GetValue<int>() ?? (0-100);
 
                     if (!string.IsNullOrEmpty(hashedPassword))
                     {
-                        return hashedPassword;
+                        response_object["CustomerId"] = customerId;
+                        response_object["Password"] = hashedPassword;
+                        response_object["msg"] = "Customer Found";
+                        return response_object; // Properly return the populated dictionary
                     }
                 }
-
-                return "Invalid Password";
+                return response_object;
             }
             catch
             {
-                 return "User not found";
+                response_object["msg"] = "User not found";
+                return response_object;
             }
         }
 
@@ -220,37 +222,42 @@ namespace BankingApp
         */
         public Dictionary<string, object> VerifyAWS(string username, string password)
         {
-            var responseObj = new Dictionary<string, object>();
-            responseObj["authenticated"] = false;
-        
-            
-            // create new Object of SendData Class
-            SendTransactions ST = new SendTransactions();
-            
-            string storedHash = GetHashedPassword(username).GetAwaiter().GetResult();
+            Dictionary<string, object> responseObj = GetHashedPassword(username).GetAwaiter().GetResult();
+                
+                // Safely retrieve "msg" using TryGetValue or null-conditional access
+                string msg = responseObj.TryGetValue("msg", out var msgValue) ? msgValue?.ToString() ?? "" : "";
+                responseObj["authenticated"] = false;
 
-            if(storedHash == "Invalid Password" || storedHash == "User not found")
-            { 
-                responseObj["status"] = storedHash;
+                // Check if there was any error message returned from GetHashedPassword
+                if (msg == "Invalid Password" || msg == "User not found" || msg.Contains("we encountered an error"))
+                { 
+                    responseObj["status"] = string.IsNullOrEmpty(msg) ? "Authentication failed" : msg;
+                    return responseObj;
+                }
+
+                // Safely check if "Password" exists before reading it
+                if (!responseObj.TryGetValue("Password", out var storedHashObj) || storedHashObj == null)
+                {
+                    responseObj["status"] = "Invalid Password";
+                    return responseObj;
+                }
+
+                string storedHash = storedHashObj.ToString()!;
+                
+                // Verify Password
+                bool passwordMatch = VerifyPassword(password, storedHash);
+                
+                if (!passwordMatch)
+                {
+                    responseObj["status"] = "Invalid Password";
+                    return responseObj;
+                }
+                
+                // Success path
+                responseObj["authenticated"] = true;
+                responseObj["access_token"] = GenerateAccessToken();
+                responseObj["status"] = "Username and password match";
                 return responseObj;
-            }
-    
-            string StoredHashString = storedHash;
-            
-            // verify Password
-            bool PasswordMatch = VerifyPassword(password, StoredHashString);
-            
-            if(!PasswordMatch)
-            {
-                responseObj["status"] = "Invalid Password";
-                return responseObj;
-            }
-            
-            // At this point the user has been able to be verified
-            responseObj["authenticated"] = true;
-            responseObj["access_token"] = GenerateAccessToken();
-            responseObj["status"] = "Username and password match";
-            return responseObj; 
         }
         
     } // end Verify Class

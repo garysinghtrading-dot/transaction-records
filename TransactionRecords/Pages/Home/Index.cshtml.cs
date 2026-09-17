@@ -1,7 +1,11 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using BankingApp; 
+using Microsoft.AspNetCore.Mvc.RazorPages; 
 using SQLitePCL;
+using System.Security.Claims;
+
+using BankingApp;
 namespace TransactionRecords.Pages.Home;
 
 public class HomeModel : PageModel
@@ -16,6 +20,12 @@ public class HomeModel : PageModel
     [BindProperty]
     public string StatusMessage { get; set; } = string.Empty;
 
+    [BindProperty]
+    public string UserName { get; set; } = string.Empty;
+
+    [BindProperty]
+    public int CustomerId { get; set; }
+
     public HomeModel(ILogger<HomeModel> logger)
     {
         _logger = logger;
@@ -28,11 +38,19 @@ public class HomeModel : PageModel
             // send them back to the login page if they lack cookie
             return Redirect("/");
         }
+
+        // Populate Username
+        UserName = User.Identity.Name ?? string.Empty;
+        
         return Page();
     }
     public void OnPost()
     {
         // TODO
-        Console.WriteLine("New transaction record type hit");
+    }
+
+    public void OnPostEnterTransactionRecord()
+    {
+        
     }
 }
