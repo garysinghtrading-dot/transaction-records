@@ -51,6 +51,17 @@ public class HomeModel : PageModel
 
     public void OnPostEnterTransactionRecord()
     {
-        
+        var data = new {
+            type = TransType,
+            amount = Amount
+        };
+        if(TransType == "Deposit")
+        {
+            // TODO
+        }
+        else
+        {
+            // TODO
+        }
     }
 }
