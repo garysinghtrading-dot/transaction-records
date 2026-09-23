@@ -81,7 +81,7 @@ public class HomeModel : PageModel
         var data = new {
             type = TransType,
             amount = Amount,
-            CustomerId = CustomerId; 
+            CustomerId = CustomerId
         };
 
         if(TransType == "Deposit")
