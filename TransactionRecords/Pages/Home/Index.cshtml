@@ -50,4 +50,44 @@
             <button type="submit" asp-page-handler="EnterTransactionRecord" class="btn btn-primary w-100">Save Record</button>
         </form>
     </div>
+
+@if (Model.CustomerData != null && Model.CustomerData.Success)
+{
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5>@Model.CustomerData.Msg</h5>
+            <p><strong>Customer ID:</strong> @Model.CustomerData.CustomerId</p>
+            <p><strong>Current Balance:</strong> $@Model.CustomerData.Balance</p>
+        </div>
+    </div>
+
+    <h4>Transactions</h4>
+
+    @if (Model.CustomerData.Transactions.Any())
+    {
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Transaction ID</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.CustomerData.Transactions)
+                {
+                    <tr>
+                        <td>@item.TransactionId</td>
+                        <td>@item.TransactionType</td>
+                        <td>$@item.Amount</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>No transaction records found.</p>
+    }
+}
 </div>

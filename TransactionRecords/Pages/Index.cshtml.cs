@@ -38,26 +38,37 @@ public class IndexModel : PageModel
 
     public async Task<IActionResult> OnPostLoginAsync()
     {
-       Verify V = new Verify();
-       Dictionary<string, object> responseObj = V.VerifyAWS(Username, Password); 
+        Verify V = new Verify();
+        Dictionary<string, object> responseObj = V.VerifyAWS(Username, Password);
 
-       if((bool)responseObj["authenticated"])
-       {
-            // Authentication Successful, create user id
+        // Safely check authentication status first
+        if (responseObj.TryGetValue("authenticated", out var authVal) && authVal is bool isAuthenticated && isAuthenticated)
+        {
+            // Extract CustomerId safely (defaults to "0" if missing or null)
+            string customerIdStr = responseObj.TryGetValue("CustomerId", out var idVal) ? idVal?.ToString() ?? "0" : "0";
+
+            // Authentication Successful, create claims
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, Username)
-                //new Claim(ClaimTypes.CustomerId, responseObj["CustomerId"].ToInt(),
+                new Claim(ClaimTypes.Name, Username), // Added missing comma here
+                new Claim("CustomerId", customerIdStr)
             };
 
-            var ClaimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(ClaimsIdentity));
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme, 
+                new ClaimsPrincipal(claimsIdentity)
+            );
 
             return Redirect("/Home");
-       }
-       LoginMessage = responseObj["status"]?.ToString() ?? "We're sorry, something went wrong on our end please try again later";
+        }
 
-       return Page(); 
+        // Handle failed login safely
+        LoginMessage = responseObj.TryGetValue("status", out var statusVal) 
+            ? statusVal?.ToString() ?? "We're sorry, something went wrong on our end please try again later"
+            : "We're sorry, something went wrong on our end please try again later";
+
+        return Page();
     }
 }

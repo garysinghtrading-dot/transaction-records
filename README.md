@@ -6,3 +6,6 @@ The Razor Pages application domenstrates a user interface of logging in and sign
 
 ## API-Request
 Form data is sent ovia HTTP Request to an AWS Lambda function that handles communication with the database to verify a user's username and password, or during registration creates a users account
+
+### Login
+The API request handles all communication to AWS Lambda that verifies user's Username and Password verification with AWS Cognito

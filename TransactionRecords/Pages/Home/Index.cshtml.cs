@@ -26,6 +26,8 @@ public class HomeModel : PageModel
     [BindProperty]
     public int CustomerId { get; set; }
 
+    public CustomerResponse? CustomerData {get; set; }
+
     public HomeModel(ILogger<HomeModel> logger)
     {
         _logger = logger;
@@ -41,9 +43,23 @@ public class HomeModel : PageModel
 
         // Populate Username
         UserName = User.Identity.Name ?? string.Empty;
-        
+
+        string customerIdClaim = User.FindFirst("CustomerId")?.Value ?? "0";
+        if (int.TryParse(customerIdClaim, out int parsedId))
+        {
+            CustomerId = parsedId;
+        }
+
+        var data = new {CustomerId = 14};
+        string _path = "get-customer-data";
+
+        // New Object of GetCustomerData Class
+        GetCustomerData GTD = new GetCustomerData();
+        CustomerData = GTD.FetchData(data, _path).GetAwaiter().GetResult();
+
         return Page();
     }
+    
     public void OnPost()
     {
         // TODO
@@ -51,17 +67,36 @@ public class HomeModel : PageModel
 
     public void OnPostEnterTransactionRecord()
     {
+        // Create New Object of SendTransactions Class
+        SendTransactions ST = new SendTransactions();
+        string url_path;
+
+        string customerIdClaim = User.FindFirst("CustomerId")?.Value ?? "0";
+        if (int.TryParse(customerIdClaim, out int parsedId))
+        {
+            CustomerId = parsedId;
+        }
+
+        Console.WriteLine($"Yo Yo Customer id is: {CustomerId}");
         var data = new {
             type = TransType,
-            amount = Amount
+            amount = Amount,
+            CustomerId = CustomerId; 
         };
+
         if(TransType == "Deposit")
         {
-            // TODO
+            url_path = "add-deposit";
         }
-        else
+        else if(TransType == "Withdrawal")
         {
-            // TODO
+           url_path = "add-withdrawal";
         }
+        else{
+            throw new Exception ("No proper url path is set");
+        }
+        bool recorded = ST.RecordTransaction(data, url_path).GetAwaiter().GetResult();
+        if(!recorded)
+            throw new Exception ("Could not record transaction, check your code");
     }
 }
